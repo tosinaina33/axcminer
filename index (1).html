@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <title>XCMiner - Crypto Mining Bot</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛏️</text></svg>">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+    body{
+      background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      color:#e0e0e0;min-height:100vh;padding:20px;line-height:1.6;background-attachment:fixed
+    }
+    .container{max-width:1200px;margin:0 auto;padding:20px}
+    header{display:flex;justify-content:space-between;align-items:center;padding:20px 0;
+      border-bottom:1px solid rgba(255,215,0,0.3);margin-bottom:30px}
+    .logo{font-size:1.8rem;font-weight:bold;background:linear-gradient(90deg,gold,#ff8c00,gold);
+      -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 3s infinite}
+    @keyframes shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .auth-buttons{display:flex;gap:15px}
+    .auth-btn{background:rgba(255,215,0,0.15);color:gold;border:1px solid gold;
+      padding:10px 20px;border-radius:30px;text-decoration:none;font-weight:bold;display:flex;
+      align-items:center;gap:8px;transition:all .3s ease;cursor:pointer}
+    .auth-btn:hover{background:rgba(255,215,0,0.3);transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(255,215,0,0.2)}
+
+    /* --- AUTH MODAL --- */
+    .modal-overlay{
+      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);
+      display:none;align-items:center;justify-content:center;z-index:1000
+    }
+    .modal{background:#111;border:1px solid gold;border-radius:12px;width:90%;max-width:400px;
+      padding:25px;box-shadow:0 0 20px rgba(255,215,0,0.2);animation:fadeInLeft .6s ease;position:relative}
+    @keyframes fadeInLeft{
+      0%{opacity:0;transform:translateX(-50px) scale(.95)}
+      60%{opacity:1;transform:translateX(10px) scale(1.02)}
+      100%{opacity:1;transform:translateX(0) scale(1)}
+    }
+    .tab-buttons{display:flex;justify-content:space-around;margin-bottom:20px}
+    .tab-btn{flex:1;padding:10px;color:#ccc;background:#222;border:none;cursor:pointer;
+      transition:.3s;font-weight:bold}
+    .tab-btn.active{color:#111;background:gold}
+    form{display:none;flex-direction:column;gap:15px}
+    form.active{display:flex}
+    input{padding:12px;border-radius:8px;border:1px solid #444;background:#222;color:#eee;
+      transition:.3s;width:100%}
+    input:focus{outline:none;border-color:gold;box-shadow:0 0 8px gold}
+    .bounce{animation:bounce .3s}
+    @keyframes bounce{
+      0%,100%{transform:translateY(0)}
+      50%{transform:translateY(-5px)}
+    }
+    .modal button{padding:12px;background:linear-gradient(90deg,#ff8c00,gold);border:none;
+      border-radius:8px;font-weight:bold;cursor:pointer;transition:.3s}
+    .modal button:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(255,215,0,0.3)}
+    .close-btn{position:absolute;top:15px;right:20px;color:#fff;cursor:pointer;font-size:20px}
+
+    /* Toast style */
+    #toast{
+      visibility:hidden;
+      min-width:200px;
+      background:#111;
+      color:gold;
+      text-align:center;
+      border-radius:8px;
+      padding:12px;
+      position:fixed;
+      bottom:30px;
+      right:30px;
+      z-index:2000;
+      font-weight:bold;
+      box-shadow:0 0 10px rgba(255,215,0,0.3);
+      opacity:0;
+      transition:opacity .5s, bottom .5s;
+    }
+    #toast.show{
+      visibility:visible;
+      opacity:1;
+      bottom:50px;
+    }
+
+    /* Spinner infinity */
+    .spinner{
+      display:inline-block;
+      width:20px;
+      height:20px;
+      border:3px solid gold;
+      border-top:3px solid transparent;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
+    }
+
+    /* Responsive */
+    img.crypto-image{max-width:100%;height:auto;margin-top:20px;border-radius:12px}
+    .btn{display:inline-block;margin-top:15px;padding:12px 24px;background:gold;color:#111;
+      font-weight:bold;border-radius:30px;text-decoration:none;transition:.3s}
+    .btn:hover{background:#ff8c00;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">XCMiner</div>
+      <div class="auth-buttons">
+        <div class="auth-btn" id="openRegister"><span>🔒</span> New Register</div>
+        <div class="auth-btn" id="openLogin"><span>👤</span> Meet My Buddy</div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <h1>Welcome to <span class="highlight">XCMiner</span></h1>
+      <p>Register now and get started with our advanced crypto mining platform...</p>
+      <img src="file/we.png" alt="Crypto Mining" class="crypto-image">
+      <a href="#" class="btn" id="openRegister2">Start Mining Now</a>
+    </section>
+
+    <footer>
+      <p>© 2024 XCMiner. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <div class="close-btn" id="closeModal">✖</div>
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="registerForm">Register</button>
+        <button class="tab-btn" data-tab="loginForm">Login</button>
+      </div>
+
+      <!-- Register -->
+      <form id="registerForm" class="active">
+        <input type="text" id="regName" placeholder="Full Name" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <div style="position:relative">
+          <input type="password" id="regPassword" placeholder="Password" required>
+          <span id="togglePass" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:gold">👁️</span>
+        </div>
+        <input type="tel" id="regPhone" placeholder="Phone Number" required>
+        <button type="submit" id="regBtn">Register 🚀</button>
+      </form>
+
+      <!-- Login -->
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button type="submit" id="loginBtn">Login ✅</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const SUPABASE_URL = "https://hclomwxpwcxgnptbidnx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjbG9td3hwd2N4Z25wdGJpZG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5NzYxODAsImV4cCI6MjA3MzU1MjE4MH0.9mIgiLz_jVGj6QJ8hV2ocMK9bFDwym1cMEQeSx9pxIc";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Modal logic
+    const modal = document.getElementById("authModal");
+    const openRegister = document.getElementById("openRegister");
+    const openRegister2 = document.getElementById("openRegister2");
+    const openLogin = document.getElementById("openLogin");
+    const closeModal = document.getElementById("closeModal");
+
+    openRegister.onclick = openRegister2.onclick = () => showModal("registerForm");
+    openLogin.onclick = () => showModal("loginForm");
+    closeModal.onclick = () => modal.style.display = "none";
+
+    function showModal(tab){
+      modal.style.display = "flex";
+      document.querySelectorAll(".tab-btn").forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+      document.querySelectorAll("form").forEach(f=>{
+        f.classList.toggle("active", f.id===tab);
+      });
+    }
+
+    // Tab switch
+    document.querySelectorAll(".tab-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>showModal(btn.dataset.tab));
+    });
+
+    // Bounce on input
+    document.querySelectorAll("input").forEach(inp=>{
+      inp.addEventListener("input",()=>{
+        inp.classList.remove("bounce");
+        void inp.offsetWidth; // reset
+        inp.classList.add("bounce");
+      });
+    });
+
+    // Toast
+    const toast = document.getElementById("toast");
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.className="show";
+      setTimeout(()=>toast.className=toast.className.replace("show",""),3000);
+    }
+
+    // Toggle password
+    const togglePass = document.getElementById("togglePass");
+    const regPassword = document.getElementById("regPassword");
+    togglePass.onclick = () => {
+      regPassword.type = regPassword.type === "password" ? "text" : "password";
+    };
+
+    // Register
+    const regForm = document.getElementById("registerForm");
+    const regBtn = document.getElementById("regBtn");
+    regForm.addEventListener("submit", async(e)=>{
+      e.preventDefault();
+      const name = document.getElementById("regName").value;
+      const email = document.getElementById("regEmail").value;
+      const password = regPassword.value;
+      const phone = document.getElementById("regPhone").value;
+
+      regBtn.innerHTML = '<div class="spinner"></div>';
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if(error){ 
+        showToast("❌ " + error.message);
+        regBtn.innerHTML = "Register 🚀";
+        return;
+      }
+
+      localStorage.setItem("xcminer_profile", JSON.stringify({ name, phone }));
+      showToast("✅ Registered! Redirecting...");
+      setTimeout(()=> window.location.href="home.html", 2000);
+    });
+
+    // Login
+    const loginForm = document.getElementById("loginForm");
+    loginForm.addEventListener("submit", async(e)=>{
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const loginBtn = document.getElementById("loginBtn");
+      loginBtn.innerHTML = '<div class="spinner"></div>';
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if(error){ 
+        showToast("❌ " + error.message);
+        loginBtn.innerHTML = "Login ✅";
+        return;
+      }
+
+      showToast("✅ Welcome back!");
+      setTimeout(()=> window.location.href="home.html", 2000);
+    });
+  </script>
+</body>
+</html>

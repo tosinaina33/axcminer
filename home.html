@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XCMiner — App</title>
+
+  <!-- Remixicon (icons) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet"/>
+
+  <!-- Tailwind (you included before) -->
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+  <style>
+    /* minimal theme adjustments so nav glows */
+    body { background: #000; color: #ddd; font-family: Inter, system-ui, sans-serif; }
+    main#app-root { padding: 18px; min-height: calc(100vh - 140px); }
+
+    /* bottom floating nav */
+    .nav-floating {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      background: rgba(8,8,8,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(57,255,20,0.12);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+    .nav-item { width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:10px; color:#fff; transition:all .18s; }
+    .nav-item:hover { transform:translateY(-4px); color:#39FF14; }
+    .nav-item.active { background: linear-gradient(180deg,#05220b, #0b3b0b); color:#39FF14; box-shadow: 0 6px 16px rgba(57,255,20,0.08); }
+    .badge { font-size:11px; padding:2px 6px; border-radius:999px; background:#111; color:gold; margin-left:8px; }
+
+    /* simple loader */
+    .loader-infinite {
+      width:20px; height:20px; border-radius:999px; border:3px solid gold; border-top-color:transparent; animation:spin 1s linear infinite;
+    }
+    @keyframes spin { 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
+
+    /* card style for lists */
+    .card { background: linear-gradient(180deg,#07101a,#0b1b27); border-radius:12px; padding:12px; border:1px solid rgba(255,215,0,0.06); color:#eee; }
+    .btn { background:linear-gradient(90deg,#ff8c00,gold); color:#111; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <main id="app-root" class="max-w-3xl mx-auto">
+    <!-- dynamic pages render here -->
+    <div class="card">
+      <h2 class="text-xl font-bold">Welcome to XCMiner</h2>
+      <p class="text-sm mt-2 text-gray-300">Use the bottom nav to switch pages. Market will load mining bots from Supabase.</p>
+    </div>
+  </main>
+
+  <!-- bottom nav -->
+  <nav class="nav-floating md:hidden block">
+    <div class="flex items-center space-x-4">
+      <a class="nav-item" role="button" data-page="home" title="Home"><i class="ri-home-line text-lg"></i></a>
+      <a class="nav-item" role="button" data-page="market" title="Market"><i class="ri-store-2-line text-lg"></i></a>
+      <a class="nav-item" role="button" data-page="purchase" title="Purchase"><i class="ri-shopping-cart-2-line text-lg"></i></a>
+      <a class="nav-item" role="button" data-page="me" title="Me"><i class="ri-user-line text-lg"></i></a>
+    </div>
+  </nav>
+
+  <!-- dynamic loader script -->
+  <script type="module">
+    // map routes → module paths
+    const routes = {
+      home: './pages/home.js',
+      market: './pages/market.js',
+      purchase: './pages/purchase.js',
+      me: './pages/me.js'
+    };
+
+    const app = document.getElementById('app-root');
+    const navItems = document.querySelectorAll('[data-page]');
+
+    function setActiveNav(key){
+      navItems.forEach(n => {
+        n.classList.toggle('active', n.dataset.page === key);
+      });
+    }
+
+    async function loadPage(key){
+      if(!routes[key]) return console.error('No route', key);
+      app.innerHTML = `<div class="card"><div style="display:flex;align-items:center;gap:12px"><div class="loader-infinite"></div><div>Loading ${key}...</div></div></div>`;
+      try{
+        const mod = await import(routes[key]);
+        // default export is a function(container) that renders into container
+        await mod.default(app);
+        setActiveNav(key);
+      }catch(err){
+        console.error(err);
+        app.innerHTML = `<div class="card">Error loading page: ${err.message}</div>`;
+      }
+    }
+
+    // attach nav listeners
+    navItems.forEach(n => n.addEventListener('click', (e) => {
+      const page = n.dataset.page;
+      loadPage(page);
+    }));
+
+    // load the default page
+    loadPage('home');
+  </script>
+</body>
+</html>
