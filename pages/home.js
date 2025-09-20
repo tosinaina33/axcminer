@@ -1,5 +1,5 @@
 // pages/home.js
-import { supabase } from '../supabaseClient.js';
+import { supabase } from '/supabaseClient.js';
 
 export default async function render(container){
   container.innerHTML = `<div class="card">
